@@ -1,0 +1,71 @@
+name: CI/CD for MAUI.
+run-name: Manually distributing iOS/Android or both applications to any environment.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Specify the version, for example 2.0.x
+        default: 2.0.0
+        required: true
+
+      platforms_to_distribute:
+        description: Indicates if we should distribute iOS, Android or both of them.
+        required: true
+        default: Android
+        type: choice
+        options:
+          - Android
+          - iOS
+          - Android + iOS
+
+      buildConfiguration:
+        description: Indicates, which environment we're going to use for our builds.
+        required: true
+        default: QA
+        type: choice
+        options:
+          - Debug
+          - Release
+          - DEV1
+          - DEV2
+          - DEV3
+          - QA
+          - QA2
+          - UAT
+
+jobs:  
+  build_android:
+    if: ${{ contains(github.event.inputs.platforms_to_distribute, 'Android') }}
+    name: "Android: building and distributing."
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update TargetFramework
+        run: |
+          sed -i 's#<TargetFrameworks>.*</TargetFrameworks>#<TargetFrameworks>net8.0-android</TargetFrameworks>#g' ./TestMaui/TestMaui.csproj
+          echo "TargetFrameworks updated to:"
+          find ./TestMaui/TestMaui.csproj  -exec cat {} \;
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install maui-android
+        run: dotnet workload install maui-android
+
+      - name: Install Android Sdk platform tools
+        run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
+
+      - name: Build for Android Test
+        run: dotnet publish ./TestMaui/TestMaui.csproj -c ${{ github.event.inputs.buildConfiguration }} -f:net8.0-android -p:ArchiveOnBuild=true -p:Platform=AnyCPU
+
+#      - name: Upload Android artifacts
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: android-bundle
+#          path: './Tradesmith/Tradesmith.Mobile/bin/${{ github.event.inputs.buildConfiguration }}/net8.0-android/publish/**-Signed.apk'
