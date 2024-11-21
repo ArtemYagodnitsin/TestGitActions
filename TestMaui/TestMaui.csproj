@@ -22,6 +22,7 @@
 
         <!-- App Identifier -->
         <ApplicationId>com.companyname.testmaui</ApplicationId>
+        <MauiVersion>9.0.10</MauiVersion>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
