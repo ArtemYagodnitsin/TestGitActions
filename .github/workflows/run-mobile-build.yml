@@ -62,7 +62,7 @@ jobs:
         run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
 
       - name: Build for Android Test
-        run: dotnet publish ./TestMaui/TestMaui.csproj -c ${{ github.event.inputs.buildConfiguration }} -f:net8.0-android -p:ArchiveOnBuild=true -p:Platform=AnyCPU
+        run: dotnet publish -v diag ./TestMaui/TestMaui.csproj -c ${{ github.event.inputs.buildConfiguration }} -f:net8.0-android -p:ArchiveOnBuild=true -p:Platform=AnyCPU
 
 #      - name: Upload Android artifacts
 #        uses: actions/upload-artifact@v4
